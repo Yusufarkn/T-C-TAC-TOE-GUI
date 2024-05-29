@@ -1,0 +1,144 @@
+//Oyun iki kişi sıra sıra X-O şeklinde ilerler.
+//3 tane X Ya da O yu alt alta yan yana çapraz şekilde denk getirildiğinde oyun biter.
+//Kazanan kişi ekranda yazdırılır.
+//Kodlar Java dilinde yazılmıştır.
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+
+public class TicTacToe extends JFrame {
+    private static final int BOARD_SIZE = 3;
+    private static final char EMPTY_CELL = '-';
+    private static final char PLAYER_X = 'X';
+    private static final char PLAYER_O = 'O';
+
+    private char[][] board = new char[BOARD_SIZE][BOARD_SIZE];
+    private char currentPlayer = PLAYER_X;
+
+    private JButton[][] buttons = new JButton[BOARD_SIZE][BOARD_SIZE];
+    private JLabel statusLabel;
+
+    public TicTacToe() {
+        setTitle("TicTacToe");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(300, 300);
+        setLayout(new GridLayout(BOARD_SIZE +1, BOARD_SIZE));
+
+        initializeBoard();
+        setupButtons();
+        setupStatusLabel();
+
+        setVisible(true);
+    }
+
+    private void initializeBoard() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                board[i][j] = EMPTY_CELL;
+            }
+        }
+    }
+
+    private void setupButtons() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(50, 50));
+                button.setFont(new Font("Arial", Font.BOLD, 24));
+                button.addActionListener(new ButtonClickListener(i, j));
+                buttons[i][j] = button;
+                add(button);
+            }
+        }
+    }
+
+    private void setupStatusLabel() {
+        statusLabel = new JLabel("Player " + currentPlayer + "'s turn");
+        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(statusLabel);
+    }
+
+    private boolean isWinningMove(int row, int col) {
+        char symbol = board[row][col];
+        // Check row
+        if (board[row][0] == symbol && board[row][1] == symbol && board[row][2] == symbol) {
+            return true;
+        }
+        // Check column
+        if (board[0][col] == symbol && board[1][col] == symbol && board[2][col] == symbol) {
+            return true;
+        }
+        // Check diagonals
+        if (row == col && board[0][0] == symbol && board[1][1] == symbol && board[2][2] == symbol) {
+            return true;
+        }
+        if (row + col == BOARD_SIZE - 1 && board[0][2] == symbol && board[1][1] == symbol && board[2][0] == symbol) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isBoardFull() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] == EMPTY_CELL) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void switchPlayer() {
+        currentPlayer = (currentPlayer == PLAYER_X) ? PLAYER_O : PLAYER_X;
+        statusLabel.setText("Player " + currentPlayer + "'s turn");
+    }
+
+    private class ButtonClickListener implements ActionListener {
+        private int row;
+        private int col;
+
+        public ButtonClickListener(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (board[row][col] == EMPTY_CELL) {
+                board[row][col] = currentPlayer;
+                buttons[row][col].setText(Character.toString(currentPlayer));
+
+                if (isWinningMove(row, col)) {
+                    JOptionPane.showMessageDialog(TicTacToe.this, "Player " + currentPlayer + " wins!");
+                    resetGame();
+                } else if (isBoardFull()) {
+                    JOptionPane.showMessageDialog(TicTacToe.this, "It's a draw!");
+                    resetGame();
+                } else {
+                    switchPlayer();
+                }
+            } else {
+                JOptionPane.showMessageDialog(TicTacToe.this, "Invalid move. Please try again.");
+            }
+        }
+    }
+
+    private void resetGame() {
+        initializeBoard();
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                buttons[i][j].setText("");
+            }
+        }
+        currentPlayer = PLAYER_X;
+        statusLabel.setText("Player " + currentPlayer + "'s turn");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(TicTacToe::new);
+    }
+}
